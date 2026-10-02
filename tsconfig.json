@@ -4,8 +4,10 @@
     "target": "esnext",
     "types": ["node"],
     
-    // Disable compilation outputs (use tsx for runtime)
-    "noEmit": true,
+    // Enable compilation output
+    "outDir": "./dist",
+    "rootDir": "./",
+    "noEmit": false,
     
     // Stricter Typechecking
     "strict": true,
@@ -16,8 +18,12 @@
     "moduleDetection": "force",
     "verbatimModuleSyntax": true,
     "isolatedModules": true,
-    "skipLibCheck": true
+    "skipLibCheck": true,
+    
+    // Source maps for debugging
+    "sourceMap": false,
+    "declaration": false
   },
   "include": ["src/**/*", "*.ts"],
-  "exclude": ["node_modules"]
+  "exclude": ["node_modules", "dist"]
 }

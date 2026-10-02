@@ -58,9 +58,13 @@ socket.getSocket().ev.on('messages.upsert', async ({ messages, type }) => {
         if (isGroup) {
             const listenGroups = await fileStorage.getListenGroups()
             const isListenGroup = listenGroups.includes(msg.key.remoteJid ?? "")
-
+            
             if (isListenGroup) {
-                await forward(msg)
+                console.log(msg)
+                console.log("")
+                console.log(converstation)
+                
+                // await forward(msg)
             }
         }
     }

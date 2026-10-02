@@ -5,6 +5,7 @@ node_modules/
 auth/
 
 # Build outputs (if you ever compile)
+dist/
 *.js
 *.d.ts
 *.js.map
