@@ -1,0 +1,24 @@
+version: '3.8'
+
+services:
+  autoforward:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: autoforward-bot
+    restart: unless-stopped
+    env_file:
+      - .env
+    volumes:
+      - ./storage:/app/storage
+      - ./auth:/app/auth
+    environment:
+      - NODE_ENV=production
+    stdin_open: true
+    tty: true
+    networks:
+      - autoforward-network
+
+networks:
+  autoforward-network:
+    driver: bridge
