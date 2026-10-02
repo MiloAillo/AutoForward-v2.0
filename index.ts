@@ -2,8 +2,10 @@ import { isJidGroup, jidDecode } from "@whiskeysockets/baileys";
 import { WASocket } from "./src/classes/WASocket.js";
 import { isCommand } from "./src/helper/isCommand.js";
 import { directCommand } from "./src/autoForward/directCommand.js";
+import { forward } from "./src/autoForward/forward.js";
 import { CacheStorage } from "./src/classes/CacheStorage.js";
 import FileStorage from "./src/classes/FileStorage.js";
+import OpenAI from 'openai'
 
 // load .env
 process.loadEnvFile(".env")
@@ -12,13 +14,18 @@ if (!process.env.ADMIN_NUMBER) throw Error("ADMIN_NUMBER needed inside .env")
 // initialize classes
 export const socket = new WASocket()
 await socket.waitForConnection()
-console.log("[index.ts] WASocket initialized")
+console.log("[index] WASocket initialized")
 
 export const cacheStorage = new CacheStorage()
-console.log("[index.ts] CacheStorage initialized")
+console.log("[index] CacheStorage initialized")
 
 export const fileStorage = new FileStorage()
-console.log("[index.ts] FileStorage initialized")
+console.log("[index] FileStorage initialized")
+
+export const modelProvider = new OpenAI({
+    apiKey: "sk-f9efc5d7769ebe59-of1kxo-a77c00c1",
+    baseURL: "http://localhost:20128/v1"
+})
 
 // WASocket message upsert event listener
 socket.getSocket().ev.on('messages.upsert', async ({ messages, type }) => {
@@ -38,11 +45,20 @@ socket.getSocket().ev.on('messages.upsert', async ({ messages, type }) => {
         if (!pn) continue
 
         // AutoForward
+        // direct command from admin
         if (pn === process.env.ADMIN_NUMBER && !isGroup && converstation) {
             if (isDirect) 
                 directCommand(msg, converstation)
+        }
 
+        // listening group
+        if (isGroup) {
+            const listenGroups = await fileStorage.getListenGroups()
+            const isListenGroup = listenGroups.includes(msg.key.remoteJid ?? "")
 
+            if (isListenGroup) {
+                await forward(msg)
+            }
         }
     }
 })
