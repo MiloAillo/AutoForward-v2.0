@@ -18,7 +18,10 @@ export class WASocket {
     private initPromise: Promise<void>
 
     constructor() {
-        this.groupCache = new NodeCache({ stdTTL: 15 * 60, useClones: false })
+        const groupCacheTTL = process.env.GROUP_CACHE_TTL_SECONDS 
+            ? parseInt(process.env.GROUP_CACHE_TTL_SECONDS) 
+            : 15 * 60
+        this.groupCache = new NodeCache({ stdTTL: groupCacheTTL, useClones: false })
         this.logger = P({ level: "silent" })
         this.initPromise = this.init().catch(err => {
             console.error(`[ ${this.id} WASocket] Initialization failed:`, err)
@@ -55,7 +58,8 @@ export class WASocket {
         this.id = uuid()
 
         if (!this.authState) {
-            this.authState = await useMultiFileAuthState('auth')
+            const authDir = process.env.AUTH_STATE_DIR || 'auth'
+            this.authState = await useMultiFileAuthState(authDir)
         }
 
         if (!this.waVersion) {

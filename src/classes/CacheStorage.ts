@@ -6,7 +6,10 @@ export class CacheStorage {
     private groups: NodeCache;
 
     constructor() {
-        this.groups = new NodeCache({ stdTTL: 5 * 60, useClones: false });
+        const cacheTTL = process.env.CACHE_TTL_SECONDS 
+            ? parseInt(process.env.CACHE_TTL_SECONDS) 
+            : 5 * 60
+        this.groups = new NodeCache({ stdTTL: cacheTTL, useClones: false });
     }
 
     /**

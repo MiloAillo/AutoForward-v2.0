@@ -7,11 +7,14 @@ import { CacheStorage } from "./src/classes/CacheStorage.js";
 import FileStorage from "./src/classes/FileStorage.js";
 import OpenAI from 'openai'
 
-// load .env
+// env load
 process.loadEnvFile(".env")
-if (!process.env.ADMIN_NUMBER) throw Error("ADMIN_NUMBER needed inside .env")
 
-// initialize classes
+if (!process.env.ADMIN_NUMBER) throw Error("ADMIN_NUMBER needed inside .env")
+if (!process.env.OPENAI_API_KEY) throw Error("OPENAI_API_KEY needed inside .env")
+if (!process.env.OPENAI_BASE_URL) throw Error("OPENAI_BASE_URL needed inside .env")
+
+// init
 export const socket = new WASocket()
 await socket.waitForConnection()
 console.log("[index] WASocket initialized")
@@ -23,8 +26,8 @@ export const fileStorage = new FileStorage()
 console.log("[index] FileStorage initialized")
 
 export const modelProvider = new OpenAI({
-    apiKey: "sk-f9efc5d7769ebe59-of1kxo-a77c00c1",
-    baseURL: "http://localhost:20128/v1"
+    apiKey: process.env.OPENAI_API_KEY,
+    baseURL: process.env.OPENAI_BASE_URL
 })
 
 // WASocket message upsert event listener

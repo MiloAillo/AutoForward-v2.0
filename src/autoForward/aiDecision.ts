@@ -46,7 +46,7 @@ export async function shouldForwardMessage(msg: WAMessage, criteria: string): Pr
     ];
 
     const response = await modelProvider.chat.completions.create({
-        model: "ultimate",
+        model: process.env.AI_MODEL_NAME || "ultimate",
         tools: tools,
         tool_choice: "required",
         messages: [
@@ -54,7 +54,7 @@ export async function shouldForwardMessage(msg: WAMessage, criteria: string): Pr
                 role: "system",
                 content: `You are a WhatsApp bot decision engine. 
                     Criteria to send: ${criteria}.
-                    Criteria to skip: if it doesnt met the criteria or the chat is empty`
+                    Criteria to skip: if it doesnt met the criteria or the chat is empty.`
             },
             {
                 role: "user",

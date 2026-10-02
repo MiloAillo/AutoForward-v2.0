@@ -18,8 +18,9 @@ class FileStorage {
     private forwardRules: PathLike
 
     constructor() {
-        this.listenGroups = "./storage/listenGroups.json"
-        this.forwardRules = "./storage/forwardRules.json"
+        const storageDir = process.env.STORAGE_DIR || "./storage"
+        this.listenGroups = `${storageDir}/listenGroups.json`
+        this.forwardRules = `${storageDir}/forwardRules.json`
     }
 
     private async ensureStorageExists(): Promise<void> {
