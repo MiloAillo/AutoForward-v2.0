@@ -30,7 +30,7 @@ export async function shouldForwardMessage(msg: WAMessage, criteria: string): Pr
             type: "function",
             function: {
                 name: "skipMessage",
-                description: "Skip responding to the message if it fails criteria (e.g. spam, irrelevant, or non-actionable).",
+                description: "Skip responding to the message if it fails criteria",
                 parameters: {
                     type: "object",
                     properties: {
