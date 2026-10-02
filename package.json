@@ -1,0 +1,27 @@
+{
+  "name": "autoforward-v2.0",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "module",
+  "devDependencies": {
+    "@types/node": "^26.6.3",
+    "@types/qrcode-terminal": "^0.12.2",
+    "typescript": "^7.0.2"
+  },
+  "dependencies": {
+    "@cacheable/node-cache": "^3.1.1",
+    "@hapi/boom": "^10.0.1",
+    "@whiskeysockets/baileys": "^7.0.0-rc14",
+    "node-cache": "^5.1.2",
+    "pino": "^10.3.1",
+    "qrcode-terminal": "^0.12.0",
+    "uuid": "^14.0.2"
+  }
+}
