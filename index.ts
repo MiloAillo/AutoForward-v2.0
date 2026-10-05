@@ -60,11 +60,9 @@ socket.getSocket().ev.on('messages.upsert', async ({ messages, type }) => {
             const isListenGroup = listenGroups.includes(msg.key.remoteJid ?? "")
             
             if (isListenGroup) {
-                // console.log(msg)
-                // console.log("")
-                // console.log(converstation)
+                console.log(msg)
 
-                await forward(msg)
+                // await forward(msg)
             }
         }
     }

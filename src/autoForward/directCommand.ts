@@ -6,12 +6,12 @@ export async function directCommand(msg: WAMessage, converstation: string) {
     const jid = msg.key.remoteJid!
 
     // !help                =>  Output All Commands Available
-    if (converstation === "!help") {
+    if (converstation === ".help") {
         sock.sendMessage(jid, { text: "this is help" }, { quoted: msg })
     }
 
     // !list                =>  Give all groups and their index
-    if (converstation === "!list") {
+    if (converstation === ".list") {
         const groups = await cacheStorage.getGroups()
         let text = ""
 
@@ -23,7 +23,7 @@ export async function directCommand(msg: WAMessage, converstation: string) {
     }
 
     // !listenTo            =>  Set group to listen to according to the group id
-    if (converstation.split(" ")[0] === "!listenTo") {
+    if (converstation.split(" ")[0] === ".listenTo") {
         const groupJID = converstation.split(" ")[1]
         
         if (!groupJID) {
@@ -48,7 +48,7 @@ export async function directCommand(msg: WAMessage, converstation: string) {
     }
 
     // !sendTo              =>  Set group to sendTo according to the group id and the criteria to send
-    if (converstation.split(" ")[0] === "!sendTo") {
+    if (converstation.split(" ")[0] === ".sendTo") {
         const parts = converstation.split(" ")
         const groupJID = parts[1]
         const criteria = parts.slice(2).join(" ")
@@ -80,7 +80,7 @@ export async function directCommand(msg: WAMessage, converstation: string) {
     }
 
     // !removeSendTo        =>  Remove forward rule for a specific group
-    if (converstation.split(" ")[0] === "!removeSendTo") {
+    if (converstation.split(" ")[0] === ".removeSendTo") {
         const groupJID = converstation.split(" ")[1]
         
         if (!groupJID) {
@@ -100,7 +100,7 @@ export async function directCommand(msg: WAMessage, converstation: string) {
     }
 
     // !removeListenTo      =>  Remove group from listen list
-    if (converstation.split(" ")[0] === "!removeListenTo") {
+    if (converstation.split(" ")[0] === ".removeListenTo") {
         const groupJID = converstation.split(" ")[1]
         
         if (!groupJID) {
@@ -119,9 +119,8 @@ export async function directCommand(msg: WAMessage, converstation: string) {
         }
     }
 
-
     // !check               => complete status of the current state
-    if (converstation === "!check") {
+    if (converstation === ".check") {
         let statusMSG = ""
 
         const groupsJID = await fileStorage.getListenGroups()

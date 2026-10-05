@@ -25,6 +25,7 @@ npm-debug.log*
 Thumbs.db
 
 storage/
+auth/
 
 # Docker
 .dockerignore
