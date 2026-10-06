@@ -14,11 +14,13 @@ datasource db {
 
 model ForwardItem {
   id                  Int               @id @default(autoincrement())
-  listenId            String
+  listenId            String            
   sendId              String
 
   chats               Chat[]
   rules               SendRule[]
+
+  @@unique([listenId, sendId])
 }
 
 model Chat {
@@ -30,6 +32,10 @@ model Chat {
   isAcknowledged  Boolean   @default(false)
 
   forwardItem     ForwardItem       @relation(fields: [forwardItemId], references: [id])
+
+  @@index([forwardItemId, datetime])
+  @@index([forwardItemId, isAcknowledged])
+  @@index([datetime])
 }
 
 model SendRule {
@@ -38,4 +44,6 @@ model SendRule {
   description     String
   rule            String    @db.Text
   forwardItems    ForwardItem[]
+
+  @@index([title])
 }
