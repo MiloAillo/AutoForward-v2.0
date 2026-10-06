@@ -21,8 +21,7 @@ type deleteForwardType = number
 type addMessageType = {
     forwardItemId: number,
     msg: WAMessage,
-    datetime: Date,
-    mediaPath?: string
+    mediaPath?: string | undefined
 }
 
 type markAsSentType = number[]
@@ -259,13 +258,12 @@ export class PrismaStorage {
         }
     }
 
-    async addMessage({ forwardItemId, msg, datetime, mediaPath }: addMessageType) {
+    async addMessage({ forwardItemId, msg, mediaPath }: addMessageType) {
         try {
             const newMessage = await this.prisma.chat.create({
                 data: {
                     forwardItemId,
                     msg: msg as any,
-                    datetime,
                     mediaPath: mediaPath ?? null,
                     isSent: false
                 }
