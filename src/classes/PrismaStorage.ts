@@ -22,6 +22,7 @@ type addMessageType = {
     forwardItemId: number,
     msg: WAMessage,
     mediaPath?: string | undefined
+    mediaBase64?: string | undefined
 }
 
 type markAsSentType = number[]
@@ -258,13 +259,14 @@ export class PrismaStorage {
         }
     }
 
-    async addMessage({ forwardItemId, msg, mediaPath }: addMessageType) {
+    async addMessage({ forwardItemId, msg, mediaPath, mediaBase64 }: addMessageType) {
         try {
             const newMessage = await this.prisma.chat.create({
                 data: {
                     forwardItemId,
                     msg: msg as any,
                     mediaPath: mediaPath ?? null,
+                    mediaBase64: mediaBase64 ?? null,
                     isSent: false
                 }
             })
@@ -318,6 +320,63 @@ export class PrismaStorage {
             return messages
         } catch (error) {
             console.error(`[PrismaStorage] Failed to fetch unsent messages:`, error)
+            throw error
+        }
+    }
+
+    async getForwardsWithUnsentMessages() {
+        try {
+            const forwards = await this.prisma.forwardItem.findMany({
+                where: {
+                    chats: {
+                        some: {
+                            isSent: false
+                        }
+                    }
+                },
+                include: {
+                    rules: true,
+                    chats: {
+                        where: {
+                            isSent: false
+                        },
+                        orderBy: {
+                            datetime: 'asc'
+                        }
+                    }
+                }
+            })
+
+            console.log(`[PrismaStorage] Fetched ${forwards.length} forward item(s) with unsent messages`)
+            return forwards
+        } catch (error) {
+            console.error(`[PrismaStorage] Failed to fetch forwards with unsent messages:`, error)
+            throw error
+        }
+    }
+
+    async getForwardsWithMessages() {
+        try {
+            const forwards = await this.prisma.forwardItem.findMany({
+                where: {
+                    chats: {
+                        some: {}
+                    }
+                },
+                include: {
+                    rules: true,
+                    chats: {
+                        orderBy: {
+                            datetime: 'asc'
+                        }
+                    }
+                }
+            })
+
+            console.log(`[PrismaStorage] Fetched ${forwards.length} forward item(s) with messages`)
+            return forwards
+        } catch (error) {
+            console.error(`[PrismaStorage] Failed to fetch forwards with messages:`, error)
             throw error
         }
     }

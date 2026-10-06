@@ -40,15 +40,19 @@ export async function messageHandler({ messages, type }: messageHandlerType) {
                 
                 if (forwards.length > 0) {
                     let mediaPath: string | undefined = undefined
+                    let mediaBase64: string | undefined = undefined
 
                     // Handle media messages (images and videos)
                     if (contentType === "imageMessage" || contentType === "videoMessage") {
-                        mediaPath = await downloadMedia(msg, contentType)
+                        const mediaResult = await downloadMedia(msg, contentType)
                         
-                        if (!mediaPath) {
-                            console.error("[index] Media download failed, skipping message")
+                        if (!mediaResult) {
+                            console.error("[messageHandler] Media download failed, skipping message")
                             continue
                         }
+
+                        mediaPath = mediaResult.filename
+                        mediaBase64 = mediaResult.base64Url
                     }
 
                     // Append to each forward's own chat history
@@ -57,16 +61,17 @@ export async function messageHandler({ messages, type }: messageHandlerType) {
                             await prismaStorage.addMessage({
                                 forwardItemId: forward.id,
                                 msg: msg,
-                                mediaPath: mediaPath
+                                mediaPath: mediaPath,
+                                mediaBase64: mediaBase64
                             })
-                            console.log(`[index] Message stored for forward item ${forward.id} from ${await cacheStorage.getGroupName(forward.listenId)}`)
+                            console.log(`[messageHandler] Message stored for forward item ${forward.id} from ${await cacheStorage.getGroupName(forward.listenId)}`)
                         } catch (error) {
-                            console.error(`[index] Failed to store message for forward item ${forward.id}:`, error)
+                            console.error(`[messageHandler] Failed to store message for forward item ${forward.id}:`, error)
                         }
                     }
                 }
             } catch (error) {
-                console.error("[index] Failed to process message:", error)
+                console.error("[messageHandler] Failed to process message:", error)
             }
         }
     }

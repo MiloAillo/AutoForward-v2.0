@@ -29,6 +29,7 @@ model Chat {
   msg             Json
   datetime        DateTime  @default(now())
   mediaPath       String?
+  mediaBase64     String?   @db.LongText
   isSent          Boolean   @default(false)
 
   forwardItem     ForwardItem       @relation(fields: [forwardItemId], references: [id], onDelete: Cascade)

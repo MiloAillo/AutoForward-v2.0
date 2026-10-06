@@ -8,6 +8,7 @@ import { PrismaStorage } from "./src/classes/PrismaStorage.js";
 import { mkdir } from "fs/promises";
 import { downloadMedia } from "./src/helper/downloadMedia.js";
 import { messageHandler } from "./src/autoForward/messageHandler.js";
+import { msgCronBatchForward } from "./src/autoForward/cron/msgCronBatchForward.js";
 
 // env load
 process.loadEnvFile(".env")
@@ -41,3 +42,6 @@ socket.on("socket-ready", () => {
     console.log("[index] socket-ready event received. Listening to messages upsert now...")
     socket.getSocket().ev.on('messages.upsert', messageHandler)
 })
+
+// message batch send every X minutes
+msgCronBatchForward()
