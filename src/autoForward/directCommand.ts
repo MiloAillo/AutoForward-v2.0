@@ -1,5 +1,6 @@
 import type { WAMessage } from "@whiskeysockets/baileys";
 import { cacheStorage, prismaStorage, socket } from "../../index.js";
+import { parseCreateRule } from "../helper/parseCreateRule.js";
 
 export async function directCommand(msg: WAMessage, converstation: string) {
     const sock = socket.getSocket()
@@ -7,7 +8,33 @@ export async function directCommand(msg: WAMessage, converstation: string) {
 
     // !help                =>  Output All Commands Available
     if (converstation === ".help") {
-        sock.sendMessage(jid, { text: "this is help" }, { quoted: msg })
+        const helpText = `Available Commands:
+
+GENERAL:
+.help - Show this help message
+.list - List all WhatsApp groups with their JIDs
+
+RULE MANAGEMENT:
+.createRule <title> | <description> | <rule>
+  Create a new reusable AI rule for message filtering
+  Example: .createRule Urgent | Forward urgent only | Only forward messages containing 'urgent' or 'ASAP'
+  Limits: title max 50 chars, description max 200 chars
+
+.getRules
+  List all created rules (ID, title, description)
+
+.getRule <ruleId>
+  Show full details of a specific rule including where it's used
+  Example: .getRule 1
+
+.removeRule <ruleId>
+  Delete a rule (blocked if used in any forward items)
+  Example: .removeRule 1
+
+FORWARD MANAGEMENT:
+(Coming soon - .createForward, .getForwards, etc.)`
+
+        sock.sendMessage(jid, { text: helpText }, { quoted: msg })
     }
 
     // !list                =>  Give all groups and their index
@@ -20,6 +47,165 @@ export async function directCommand(msg: WAMessage, converstation: string) {
         })
 
         sock.sendMessage(jid, { text: text }, { quoted: msg })
+    }
+
+    // .createRule          =>  Create a new reusable SendRule
+    if (converstation.startsWith(".createRule")) {
+        const parsed = parseCreateRule(converstation)
+
+        if (!parsed) {
+            console.error("[directCommand] Failed to parse .createRule command")
+            sock.sendMessage(jid, { 
+                text: "Invalid format. Usage:\n.createRule <title> | <description> | <rule>\n\nExample:\n.createRule Urgent | Forward urgent only | Only forward messages containing 'urgent' or 'ASAP'\n\nLimits: title max 50 chars, description max 200 chars, no pipes (|) allowed in content" 
+            }, { quoted: msg })
+            return
+        }
+
+        try {
+            const newRule = await prismaStorage.createRule(parsed)
+
+            sock.sendMessage(jid, { 
+                text: `Rule created successfully!\n\nID: ${newRule.id}\nTitle: ${newRule.title}\nDescription: ${newRule.description}` 
+            }, { quoted: msg })
+        } catch (error) {
+            console.error("[directCommand] Failed to create rule:", error)
+            sock.sendMessage(jid, { 
+                text: `Failed to create rule. Error: ${error instanceof Error ? error.message : 'Unknown error'}` 
+            }, { quoted: msg })
+        }
+    }
+
+    if (converstation.startsWith(".removeRule")) {
+        const parts = converstation.split(" ")
+        const ruleIdStr = parts[1]
+
+        if (!ruleIdStr) {
+            console.error("[directCommand] Invalid .removeRule command - no rule ID provided")
+            sock.sendMessage(jid, { 
+                text: "Invalid format. Usage:\n.removeRule <ruleId>\n\nExample:\n.removeRule 1" 
+            }, { quoted: msg })
+            return
+        }
+
+        const ruleId = parseInt(ruleIdStr)
+
+        if (isNaN(ruleId)) {
+            console.error("[directCommand] Invalid .removeRule command - rule ID is not a number")
+            sock.sendMessage(jid, { 
+                text: "Rule ID must be a number.\n\nUsage:\n.removeRule <ruleId>" 
+            }, { quoted: msg })
+            return
+        }
+
+        try {
+            const deletedRule = await prismaStorage.deleteRule(ruleId)
+
+            sock.sendMessage(jid, { 
+                text: `Rule deleted successfully!\n\nID: ${deletedRule.id}\nTitle: ${deletedRule.title}` 
+            }, { quoted: msg })
+        } catch (error) {
+            console.error("[directCommand] Failed to delete rule:", error)
+            sock.sendMessage(jid, { 
+                text: `Failed to delete rule. Error: ${error instanceof Error ? error.message : 'Unknown error'}` 
+            }, { quoted: msg })
+        }
+    }
+
+    if (converstation.startsWith(".getRules")) {
+        try {
+            const rules = await prismaStorage.getRules()
+
+            if (rules.length === 0) {
+                sock.sendMessage(jid, { 
+                    text: "No rules found. Create one with:\n.createRule <title> | <description> | <rule>" 
+                }, { quoted: msg })
+                return
+            }
+
+            let text = "All Rules:\n\n"
+            rules.forEach((rule, index) => {
+                text += `${index + 1}. [ID: ${rule.id}] ${rule.title}\n   ${rule.description}\n\n`
+            })
+
+            sock.sendMessage(jid, { text: text.trim() }, { quoted: msg })
+        } catch (error) {
+            console.error("[directCommand] Failed to get rules:", error)
+            sock.sendMessage(jid, { 
+                text: `Failed to get rules. Error: ${error instanceof Error ? error.message : 'Unknown error'}` 
+            }, { quoted: msg })
+        }
+    }
+
+    if (converstation.startsWith(".getRule") && !converstation.startsWith(".getRules")) {
+        const parts = converstation.split(" ")
+        const ruleIdStr = parts[1]
+
+        if (!ruleIdStr) {
+            console.error("[directCommand] Invalid .getRule command - no rule ID provided")
+            sock.sendMessage(jid, { 
+                text: "Invalid format. Usage:\n.getRule <ruleId>\n\nExample:\n.getRule 1" 
+            }, { quoted: msg })
+            return
+        }
+
+        const ruleId = parseInt(ruleIdStr)
+
+        if (isNaN(ruleId)) {
+            console.error("[directCommand] Invalid .getRule command - rule ID is not a number")
+            sock.sendMessage(jid, { 
+                text: "Rule ID must be a number.\n\nUsage:\n.getRule <ruleId>" 
+            }, { quoted: msg })
+            return
+        }
+
+        try {
+            const rule = await prismaStorage.getRule(ruleId)
+
+            if (!rule) {
+                sock.sendMessage(jid, { 
+                    text: `Rule with ID ${ruleId} not found.` 
+                }, { quoted: msg })
+                return
+            }
+
+            let text = `Rule Details:\n\n`
+            text += `ID: ${rule.id}\n`
+            text += `Title: ${rule.title}\n`
+            text += `Description: ${rule.description}\n\n`
+            text += `Rule Prompt:\n${rule.rule}\n\n`
+            
+            if (rule.forwardItems && rule.forwardItems.length > 0) {
+                text += `Used in ${rule.forwardItems.length} forward item(s):\n`
+                rule.forwardItems.forEach((item, index) => {
+                    text += `${index + 1}. [ID: ${item.id}] ${item.listenId} → ${item.sendId}\n`
+                })
+            } else {
+                text += `Not used in any forward items yet.`
+            }
+
+            sock.sendMessage(jid, { text: text }, { quoted: msg })
+        } catch (error) {
+            console.error("[directCommand] Failed to get rule:", error)
+            sock.sendMessage(jid, { 
+                text: `Failed to get rule. Error: ${error instanceof Error ? error.message : 'Unknown error'}` 
+            }, { quoted: msg })
+        }
+    }
+
+    if (converstation.startsWith(".createForward")) {
+
+    }
+
+    if (converstation.startsWith(".getForwards")) {
+
+    }
+
+    if (converstation.startsWith(".getForward")) {
+
+    }
+
+    if (converstation.startsWith(".deleteForward")) {
+        
     }
 
     // ...
