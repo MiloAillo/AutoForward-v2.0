@@ -29,3 +29,9 @@ auth/
 
 # Docker
 .dockerignore
+
+/generated/prisma
+.agents/
+.claude/
+.windsurf/
+skills-lock.json

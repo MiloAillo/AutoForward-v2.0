@@ -13,14 +13,18 @@
   "license": "ISC",
   "type": "module",
   "devDependencies": {
-    "@types/node": "^26.6.3",
+    "@types/node": "^26.6.4",
     "@types/qrcode-terminal": "^0.12.2",
+    "prisma": "^7.10.0",
     "typescript": "^7.0.2"
   },
   "dependencies": {
     "@cacheable/node-cache": "^3.1.1",
     "@hapi/boom": "^10.0.1",
+    "@prisma/adapter-mariadb": "^7.10.0",
+    "@prisma/client": "7",
     "@whiskeysockets/baileys": "^7.0.0-rc14",
+    "dotenv": "^18.0.5",
     "node-cache": "^5.1.2",
     "openai": "^7.27.0",
     "pino": "^10.3.1",

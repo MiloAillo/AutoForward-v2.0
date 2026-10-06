@@ -1,0 +1,41 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Get a free hosted Postgres database in seconds: `npx create-db`
+
+generator client {
+  provider = "prisma-client"
+  output   = "../generated/prisma"
+}
+
+datasource db {
+  provider = "mysql"
+}
+
+model ForwardItem {
+  id                  Int               @id @default(autoincrement())
+  listenId            String
+  sendId              String
+
+  chats               Chat[]
+  rules               SendRule[]
+}
+
+model Chat {
+  id              Int       @id @default(autoincrement())
+  forwardItemId   Int
+  msg             Json
+  datetime        DateTime  @default(now())
+  mediaPath       String?
+  isAcknowledged  Boolean   @default(false)
+
+  forwardItem     ForwardItem       @relation(fields: [forwardItemId], references: [id])
+}
+
+model SendRule {
+  id              Int       @id @default(autoincrement())
+  title           String
+  description     String
+  rule            String    @db.Text
+  forwardItems    ForwardItem[]
+}
