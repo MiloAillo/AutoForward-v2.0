@@ -1,5 +1,5 @@
 import type { WAMessage } from "@whiskeysockets/baileys";
-import { cacheStorage, fileStorage, socket } from "../../index.js";
+import { cacheStorage, prismaStorage, socket } from "../../index.js";
 
 export async function directCommand(msg: WAMessage, converstation: string) {
     const sock = socket.getSocket()
@@ -22,6 +22,12 @@ export async function directCommand(msg: WAMessage, converstation: string) {
         sock.sendMessage(jid, { text: text }, { quoted: msg })
     }
 
+    // ...
+
+    // OUTDATED - TODO: Rewrite with new command structure using prismaStorage
+    // All commands below are disabled until rewrite
+    
+    /*
     // !listenTo            =>  Set group to listen to according to the group id
     if (converstation.split(" ")[0] === ".listenTo") {
         const groupJID = converstation.split(" ")[1]
@@ -156,4 +162,5 @@ export async function directCommand(msg: WAMessage, converstation: string) {
 
         sock.sendMessage(jid, { text: statusMSG }, { quoted: msg })
     }
+    */
 }

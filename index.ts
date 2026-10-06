@@ -2,10 +2,9 @@ import { isJidGroup, jidDecode } from "@whiskeysockets/baileys";
 import { WASocket } from "./src/classes/WASocket.js";
 import { isCommand } from "./src/helper/isCommand.js";
 import { directCommand } from "./src/autoForward/directCommand.js";
-import { forward } from "./src/autoForward/forward.js";
 import { CacheStorage } from "./src/classes/CacheStorage.js";
-import FileStorage from "./src/classes/FileStorage.js";
 import OpenAI from 'openai'
+import { PrismaStorage } from "./src/classes/PrismaStorage.js";
 
 // env load
 process.loadEnvFile(".env")
@@ -22,8 +21,8 @@ console.log("[index] WASocket initialized")
 export const cacheStorage = new CacheStorage()
 console.log("[index] CacheStorage initialized")
 
-export const fileStorage = new FileStorage()
-console.log("[index] FileStorage initialized")
+export const prismaStorage = new PrismaStorage()
+console.log("[index] PrismaStorage initialized")
 
 export const modelProvider = new OpenAI({
     apiKey: process.env.OPENAI_API_KEY,
@@ -55,15 +54,9 @@ socket.getSocket().ev.on('messages.upsert', async ({ messages, type }) => {
         }
 
         // listening group
-        if (isGroup) {
-            const listenGroups = await fileStorage.getListenGroups()
-            const isListenGroup = listenGroups.includes(msg.key.remoteJid ?? "")
+        if (isGroup) {            
+            // check with prisma if its listening group
             
-            if (isListenGroup) {
-                console.log(msg)
-
-                // await forward(msg)
-            }
         }
     }
 })

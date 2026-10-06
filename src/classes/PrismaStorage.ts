@@ -168,9 +168,10 @@ export class PrismaStorage {
         }
     }
 
-    async getForwards() {
+    async getForwards(listenId?: string) {
         try {
             const forwards = await this.prisma.forwardItem.findMany({
+                where: listenId ? { listenId } : {},
                 select: {
                     id: true,
                     listenId: true,
@@ -184,7 +185,7 @@ export class PrismaStorage {
                 }
             })
 
-            console.log(`[PrismaStorage] Fetched ${forwards.length} forward items`)
+            console.log(`[PrismaStorage] Fetched ${forwards.length} forward items${listenId ? ` for listenId: ${listenId}` : ''}`)
             return forwards
         } catch (error) {
             console.error(`[PrismaStorage] Failed to fetch forward items:`, error)
