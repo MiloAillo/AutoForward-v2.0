@@ -5,8 +5,9 @@ import type { GroupMetadata, WASocket as BaileysSocket } from "@whiskeysockets/b
 import P from 'pino'
 import qrcode from 'qrcode-terminal'
 import { v4 as uuid } from 'uuid'
+import { EventEmitter } from "events";
 
-export class WASocket {
+export class WASocket extends EventEmitter {
     private socket!: BaileysSocket
     private id!: string
     
@@ -18,6 +19,8 @@ export class WASocket {
     private initPromise: Promise<void>
 
     constructor() {
+        super()
+
         const groupCacheTTL = process.env.GROUP_CACHE_TTL_SECONDS 
             ? parseInt(process.env.GROUP_CACHE_TTL_SECONDS) 
             : 15 * 60
@@ -102,6 +105,9 @@ export class WASocket {
 
             if (connection === 'open') {
                 console.log(`[${this.id} WASocket] WhatsApp Connection Ready`)
+
+                // custom emit for recconection handling in external event service
+                this.emit("socket-ready")
             }
 
             if (connection === "close") {
