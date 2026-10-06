@@ -29,12 +29,12 @@ model Chat {
   msg             Json
   datetime        DateTime  @default(now())
   mediaPath       String?
-  isAcknowledged  Boolean   @default(false)
+  isSent          Boolean   @default(false)
 
-  forwardItem     ForwardItem       @relation(fields: [forwardItemId], references: [id])
+  forwardItem     ForwardItem       @relation(fields: [forwardItemId], references: [id], onDelete: Cascade)
 
   @@index([forwardItemId, datetime])
-  @@index([forwardItemId, isAcknowledged])
+  @@index([isSent, datetime])
   @@index([datetime])
 }
 
