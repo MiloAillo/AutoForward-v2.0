@@ -1,5 +1,10 @@
 import nodeCron from "node-cron";
 import { prismaStorage } from "../../..";
+import { forwardMessages } from "../message/messageSender";
+
+async function delay(ms: number): Promise<void> {
+    return new Promise(resolve => setTimeout(resolve, ms));
+}
 
 export async function msgCronBatchForward() {
     nodeCron.schedule("*/1 * * * *", async () => {
@@ -15,14 +20,31 @@ export async function msgCronBatchForward() {
 
             console.log(`[msgCronBatchForward] Processing ${forwards.length} forward item(s)`)
 
-            let i = 1
-            for (const forward of forwards) {
-                console.log(`[msgCronBatchForward] Processing forward item ${i}/${forwards.length}`)
-
-                // forward all message if no rules
+            for (let i = 0; i < forwards.length; i++) {
+                const forward = forwards[i];
+                if (!forward) continue;
                 
+                console.log(`[msgCronBatchForward] Processing forward item ${i + 1}/${forwards.length}`)
 
-                i++
+                // No rules - forward all messages directly
+                if (forward.rules.length === 0) {
+                    const msgs = forward.chats.map(chat => chat.msg as any);
+                    const sentCount = await forwardMessages(msgs, forward.sendId);
+                    
+                    // delete them from chat histories
+                    const chatIds = forward.chats.map(chat => chat.id);
+                    await prismaStorage.deleteMessages(chatIds);
+                    
+                    console.log(`[msgCronBatchForward] Forwarded ${sentCount}/${msgs.length} messages (no rules)`);
+                } else {
+                    // TODO: AI forwarding logic with rules
+                    console.log(`[msgCronBatchForward] Forward item has ${forward.rules.length} rule(s) - AI logic not yet implemented`);
+                }
+
+                // 2-second pause before next forward item
+                if (i < forwards.length - 1) {
+                    await delay(2000);
+                }
             }
 
             console.log(`[msgCronBatchForward] Finished processing ${forwards.length} forward item(s)`)

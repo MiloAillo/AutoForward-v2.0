@@ -298,6 +298,22 @@ export class PrismaStorage {
         }
     }
 
+    async deleteMessages(messageIds: number[]) {
+        try {
+            const result = await this.prisma.chat.deleteMany({
+                where: {
+                    id: { in: messageIds }
+                }
+            })
+
+            console.log(`[PrismaStorage] Deleted ${result.count} message(s) from chat history`)
+            return result.count
+        } catch (error) {
+            console.error(`[PrismaStorage] Failed to delete messages:`, error)
+            throw error
+        }
+    }
+
     async getUnsentMessages() {
         try {
             const messages = await this.prisma.chat.findMany({
