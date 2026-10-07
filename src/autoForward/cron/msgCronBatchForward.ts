@@ -19,19 +19,8 @@ export async function msgCronBatchForward() {
             for (const forward of forwards) {
                 console.log(`[msgCronBatchForward] Processing forward item ${i}/${forwards.length}`)
 
-                const chats = forward.chats
+                // forward all message if no rules
                 
-                // TODO: For each chat message:
-                // 1. Check if forward has rules
-                // 2. If no rules, forward all messages
-                // 3. If has rules, check message against AI with rules + mediaBase64 if present
-                // 4. Forward messages that pass
-                // 5. Mark as sent with prismaStorage.markAsSent([chatIds])
-
-                for (const chat of chats) {
-                    // TODO: Implement forwarding logic
-                    console.log(chat)
-                }
 
                 i++
             }
