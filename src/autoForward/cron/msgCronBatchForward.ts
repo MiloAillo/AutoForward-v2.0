@@ -1,6 +1,8 @@
 import nodeCron from "node-cron";
 import { prismaStorage } from "../../..";
 import { forwardMessages } from "../message/messageSender";
+import type { WAMessage } from "@whiskeysockets/baileys";
+import { aiReadyFormatter } from "../../helper/aiReadyFormatter";
 
 async function delay(ms: number): Promise<void> {
     return new Promise(resolve => setTimeout(resolve, ms));
@@ -37,8 +39,9 @@ export async function msgCronBatchForward() {
                     
                     console.log(`[msgCronBatchForward] Forwarded ${sentCount}/${msgs.length} messages (no rules)`);
                 } else {
-                    // TODO: AI forwarding logic with rules
-                    console.log(`[msgCronBatchForward] Forward item has ${forward.rules.length} rule(s) - AI logic not yet implemented`);
+                    // AI forwarding logic with rules
+                    const formatted = await aiReadyFormatter(forward)
+                    console.log(formatted)
                 }
 
                 // 2-second pause before next forward item
