@@ -9,6 +9,7 @@ import { mkdir } from "fs/promises";
 import { downloadMedia } from "./src/helper/downloadMedia.js";
 import { messageHandler } from "./src/autoForward/messageHandler.js";
 import { msgCronBatchForward } from "./src/autoForward/cron/msgCronBatchForward.js";
+import { msgCronCleanup } from "./src/autoForward/cron/msgCronCleanup.js";
 
 // env load
 process.loadEnvFile(".env")
@@ -45,3 +46,6 @@ socket.on("socket-ready", () => {
 
 // message batch send every X minutes
 msgCronBatchForward()
+
+// message cleanup cron jobs
+msgCronCleanup()

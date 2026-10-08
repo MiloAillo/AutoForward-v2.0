@@ -416,6 +416,49 @@ export class PrismaStorage {
         }
     }
 
+    async deleteOldUnsentMessages(daysThreshold: number) {
+        try {
+            const cutoffDate = new Date()
+            cutoffDate.setDate(cutoffDate.getDate() - daysThreshold)
+
+            const result = await this.prisma.chat.deleteMany({
+                where: {
+                    isSent: false,
+                    datetime: {
+                        lt: cutoffDate
+                    }
+                }
+            })
+
+            console.log(`[PrismaStorage] Deleted ${result.count} unsent message(s) older than ${daysThreshold} days`)
+            return result.count
+        } catch (error) {
+            console.error(`[PrismaStorage] Failed to delete old unsent messages:`, error)
+            throw error
+        }
+    }
+
+    async deleteAllOldMessages(daysThreshold: number) {
+        try {
+            const cutoffDate = new Date()
+            cutoffDate.setDate(cutoffDate.getDate() - daysThreshold)
+
+            const result = await this.prisma.chat.deleteMany({
+                where: {
+                    datetime: {
+                        lt: cutoffDate
+                    }
+                }
+            })
+
+            console.log(`[PrismaStorage] Deleted ${result.count} message(s) older than ${daysThreshold} days`)
+            return result.count
+        } catch (error) {
+            console.error(`[PrismaStorage] Failed to delete all old messages:`, error)
+            throw error
+        }
+    }
+
     async disconnect() {
         try {
             await this.prisma.$disconnect()
