@@ -314,6 +314,25 @@ export class PrismaStorage {
         }
     }
 
+    async getChatsByIds(messageIds: number[]) {
+        try {
+            const chats = await this.prisma.chat.findMany({
+                where: {
+                    id: { in: messageIds }
+                },
+                orderBy: {
+                    datetime: 'asc'
+                }
+            })
+
+            console.log(`[PrismaStorage] Fetched ${chats.length} chat(s) by IDs`)
+            return chats
+        } catch (error) {
+            console.error(`[PrismaStorage] Failed to fetch chats by IDs:`, error)
+            throw error
+        }
+    }
+
     async getUnsentMessages() {
         try {
             const messages = await this.prisma.chat.findMany({

@@ -3,6 +3,7 @@ import { prismaStorage } from "../../..";
 import { forwardMessages } from "../message/messageSender";
 import type { WAMessage } from "@whiskeysockets/baileys";
 import { aiReadyFormatter } from "../../helper/aiReadyFormatter";
+import { analyzeAndDecide } from "../ai/analyseAndDecide";
 
 async function delay(ms: number): Promise<void> {
     return new Promise(resolve => setTimeout(resolve, ms));
@@ -38,10 +39,13 @@ export async function msgCronBatchForward() {
                     await prismaStorage.deleteMessages(chatIds);
                     
                     console.log(`[msgCronBatchForward] Forwarded ${sentCount}/${msgs.length} messages (no rules)`);
+                
+                // AI forwarding logic with rules
                 } else {
-                    // AI forwarding logic with rules
                     const formatted = await aiReadyFormatter(forward)
-                    console.log(formatted)
+
+                    console.log(`[msgCronBatchForward] Rules found. Calling AI to decide...`)
+                    await analyzeAndDecide(formatted)
                 }
 
                 // 2-second pause before next forward item
