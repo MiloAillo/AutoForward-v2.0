@@ -39,11 +39,13 @@ export function extractImages(chats: Chat[]) {
     const images: string[] = []
 
     for (const chat of chats) {
-        if (chat.mediaBase64 && chat.mediaPath) 
+        if (chat.mediaBase64 && chat.mediaPath && chat.mediaBase64.length > 0) {
             images.push(chat.mediaBase64)
+        }
     }
 
-    return images
+    // Limit to maximum 5 images to prevent context overflow
+    return images.slice(0, 5)
 }
 
 export async function aiReadyFormatter(forward: ForwardWithRelations) {

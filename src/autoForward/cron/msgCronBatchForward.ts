@@ -14,7 +14,7 @@ export async function msgCronBatchForward() {
         console.log("[msgCronBatchForward] Batch forward initiated")
         
         try {
-            const forwards = await prismaStorage.getForwardsWithMessages()
+            const forwards = await prismaStorage.getForwardsWithUnsentMessages()
 
             if (forwards.length === 0) {
                 console.log("[msgCronBatchForward] No forwards with messages")
