@@ -42,9 +42,16 @@ export async function messageHandler({ messages, type }: messageHandlerType) {
                     let mediaPath: string | undefined = undefined
                     let mediaBase64: string | undefined = undefined
 
-                    // Handle media messages (images and videos)
-                    if (contentType === "imageMessage" || contentType === "videoMessage") {
-                        const mediaResult = await downloadMedia(msg, contentType)
+                    console.log("TEST:", contentType)
+
+                    // Handle media messages (images, videos, and documents)
+                    if (contentType === "imageMessage" || contentType === "videoMessage" || contentType === "documentMessage" || contentType === "documentWithCaptionMessage") {
+                        console.log(`[messageHandler] Detected media type: ${contentType}`)
+                        
+                        // Normalize documentWithCaptionMessage to documentMessage
+                        const normalizedContentType = contentType === "documentWithCaptionMessage" ? "documentMessage" : contentType
+                        
+                        const mediaResult = await downloadMedia(msg, normalizedContentType)
                         
                         if (!mediaResult) {
                             console.error("[messageHandler] Media download failed, skipping message")
@@ -53,6 +60,7 @@ export async function messageHandler({ messages, type }: messageHandlerType) {
 
                         mediaPath = mediaResult.filename
                         mediaBase64 = mediaResult.base64Url
+                        console.log(`[messageHandler] Media downloaded successfully: ${mediaPath}`)
                     }
 
                     // Append to each forward's own chat history

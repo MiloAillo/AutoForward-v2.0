@@ -162,7 +162,7 @@ export async function forwardAndWriteMessages(
 export async function sendMediaWithCaption(
     mediaItems: Array<{
         mediaPath: string,
-        mediaType: "image" | "video",
+        mediaType: "image" | "video" | "document",
         caption: string
     }>,
     jid: string
@@ -181,9 +181,40 @@ export async function sendMediaWithCaption(
             const filePath = `./storage/media/${mediaPath}`;
             const mediaBuffer = readFileSync(filePath);
             
-            const content = mediaType === "image" 
-                ? { image: mediaBuffer, caption } 
-                : { video: mediaBuffer, caption };
+            let content: any;
+            if (mediaType === "image") {
+                content = { image: mediaBuffer, caption };
+            } else if (mediaType === "video") {
+                content = { video: mediaBuffer, caption };
+            } else if (mediaType === "document") {
+                // Detect mimetype from filename extension
+                let mimetype = "application/octet-stream"
+                const ext = mediaPath.split('.').pop()?.toLowerCase()
+                
+                if (ext === "pdf") {
+                    mimetype = "application/pdf"
+                } else if (ext === "docx") {
+                    mimetype = "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+                } else if (ext === "doc") {
+                    mimetype = "application/msword"
+                } else if (ext === "xlsx") {
+                    mimetype = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+                } else if (ext === "xls") {
+                    mimetype = "application/vnd.ms-excel"
+                } else if (ext === "pptx") {
+                    mimetype = "application/vnd.openxmlformats-officedocument.presentationml.presentation"
+                } else if (ext === "ppt") {
+                    mimetype = "application/vnd.ms-powerpoint"
+                } else if (ext === "txt") {
+                    mimetype = "text/plain"
+                } else if (ext === "zip") {
+                    mimetype = "application/zip"
+                } else if (ext === "rar") {
+                    mimetype = "application/x-rar-compressed"
+                }
+                
+                content = { document: mediaBuffer, caption, mimetype, fileName: mediaPath };
+            }
             
             await sock.sendMessage(jid, content);
             sentCount++;

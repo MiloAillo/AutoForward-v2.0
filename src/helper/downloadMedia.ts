@@ -21,11 +21,14 @@ async function compressImage(inputPath: string, outputPath: string): Promise<voi
 
 export async function downloadMedia(msg: WAMessage, contentType: string): Promise<MediaResult | undefined> {
     try {
+        console.log(`[downloadMedia] Starting download for contentType: ${contentType}`)
+        
         // set the mimetype and default extension based on the content type
         let mimeType: string | null | undefined
         let defaultExt: string
         let isImage = false
         let isVideo = false
+        let isDocument = false
 
         if (contentType === "imageMessage") {
             mimeType = msg.message?.imageMessage?.mimetype ?? null
@@ -35,14 +38,57 @@ export async function downloadMedia(msg: WAMessage, contentType: string): Promis
             mimeType = msg.message?.videoMessage?.mimetype ?? null
             defaultExt = 'mp4'
             isVideo = true
+        } else if (contentType === "documentMessage") {
+            // Check both regular document and documentWithCaption paths
+            const docMsg = msg.message?.documentMessage 
+                        ?? msg.message?.documentWithCaptionMessage?.message?.documentMessage
+            
+            mimeType = docMsg?.mimetype ?? null
+            
+            // Get original filename from document metadata
+            const originalFilename = docMsg?.fileName ?? null
+            
+            // Extract extension from mimetype or original filename
+            let extractedExt = 'pdf'  // Default to pdf
+            if (mimeType) {
+                const parts = mimeType.split('/')
+                extractedExt = parts[1] ?? 'pdf'
+            } else if (originalFilename) {
+                const parts = originalFilename.split('.')
+                if (parts.length > 1) {
+                    extractedExt = parts[parts.length - 1] ?? 'pdf'
+                }
+            }
+            
+            defaultExt = extractedExt
+            isDocument = true
+            console.log(`[downloadMedia] Document detected - mimetype: ${mimeType}, original filename: ${originalFilename}`)
         } else {
+            console.log(`[downloadMedia] Unknown contentType: ${contentType}`)
             return undefined
         }
 
-        // build extension and filename
-        const ext = mimeType ? mimeType.split('/')[1] ?? defaultExt : defaultExt
-        const tempFilename = `temp_${UUID()}.${ext}`
-        const filename = `${UUID()}.${isImage ? 'jpeg' : ext}`
+        // Get original filename for documents
+        let finalFilename: string
+        
+        if (isDocument) {
+            const docMsg = msg.message?.documentMessage 
+                        ?? msg.message?.documentWithCaptionMessage?.message?.documentMessage
+            const originalFilename = docMsg?.fileName
+            
+            if (originalFilename) {
+                // Sanitize filename (remove dangerous characters but keep spaces)
+                finalFilename = originalFilename.replace(/[<>:"|?*]/g, '_')
+            } else {
+                finalFilename = `document_${UUID()}.${defaultExt}`
+            }
+        } else {
+            // For images/videos, use UUID-based naming
+            const ext = mimeType ? mimeType.split('/')[1] ?? defaultExt : defaultExt
+            finalFilename = `${UUID()}.${isImage ? 'jpeg' : ext}`
+        }
+        
+        const tempFilename = `temp_${UUID()}.${defaultExt}`
         
         // download media to temp file
         const mediaStream = await downloadMediaMessage(msg, "stream", {})
@@ -57,20 +103,20 @@ export async function downloadMedia(msg: WAMessage, contentType: string): Promis
             mediaStream.on('error', reject)
         })
         
-        // compress image or handle video
+        // compress image or handle video/document
         if (isImage) {
             await compressImage(
                 `./storage/media/${tempFilename}`,
-                `./storage/media/${filename}`
+                `./storage/media/${finalFilename}`
             )
             
             // delete temp file
             await unlink(`./storage/media/${tempFilename}`)
             
-            console.log(`[downloadMedia] Image saved and compressed: ${filename} (vision disabled)`)
+            console.log(`[downloadMedia] Image saved and compressed: ${finalFilename} (vision disabled)`)
             
             return {
-                filename,
+                filename: finalFilename,
                 base64Url: ""
             }
         } else if (isVideo) {
@@ -78,6 +124,17 @@ export async function downloadMedia(msg: WAMessage, contentType: string): Promis
             
             return {
                 filename: tempFilename,
+                base64Url: ""
+            }
+        } else if (isDocument) {
+            // Rename temp file to final filename
+            const fs = await import('fs/promises')
+            await fs.rename(`./storage/media/${tempFilename}`, `./storage/media/${finalFilename}`)
+            
+            console.log(`[downloadMedia] Document saved: ${finalFilename}`)
+            
+            return {
+                filename: finalFilename,
                 base64Url: ""
             }
         }

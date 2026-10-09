@@ -163,6 +163,7 @@ AVAILABLE ACTIONS:
 
 • sendMedia(mediaPaths[]) - Send media without captions
   Media messages are automatically marked as sent after sending
+  Supports images, videos, and documents (PDF, DOCX, etc.)
 
 • markMessagesAsSent(messageIds[]) - Mark messages as sent WITHOUT forwarding them
   Use for spam/irrelevant messages that don't match rules
@@ -370,11 +371,17 @@ CRITICAL RULES:
                     // Look up mediaType from original chats and collect message IDs
                     const items = rawItems.map(item => {
                         const chat = object.forwardItem.chats.find(c => c.mediaPath === item.mediaPath)
-                        const mediaType = chat?.msg?.message?.videoMessage ? "video" : "image"
+                        let mediaType: "image" | "video" | "document" = "image"
+                        
+                        if (chat?.msg?.message?.videoMessage) {
+                            mediaType = "video"
+                        } else if (chat?.msg?.message?.documentMessage || chat?.msg?.message?.documentWithCaptionMessage) {
+                            mediaType = "document"
+                        }
                         
                         return {
                             mediaPath: item.mediaPath,
-                            mediaType: mediaType as "image" | "video",
+                            mediaType: mediaType,
                             caption: item.caption
                         }
                     })
@@ -400,11 +407,17 @@ CRITICAL RULES:
                     // Look up mediaType from original chats and collect message IDs
                     const mediaItems = mediaPaths.map(mediaPath => {
                         const chat = object.forwardItem.chats.find(c => c.mediaPath === mediaPath)
-                        const mediaType = chat?.msg?.message?.videoMessage ? "video" : "image"
+                        let mediaType: "image" | "video" | "document" = "image"
+                        
+                        if (chat?.msg?.message?.videoMessage) {
+                            mediaType = "video"
+                        } else if (chat?.msg?.message?.documentMessage || chat?.msg?.message?.documentWithCaptionMessage) {
+                            mediaType = "document"
+                        }
                         
                         return {
                             mediaPath: mediaPath,
-                            mediaType: mediaType as "image" | "video",
+                            mediaType: mediaType,
                             caption: ""  // Empty caption for media-only
                         }
                     })
