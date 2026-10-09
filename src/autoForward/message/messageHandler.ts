@@ -1,7 +1,7 @@
 import { isJidGroup, jidDecode, getContentType, type WAMessage, type MessageUpsertType } from "@whiskeysockets/baileys"
-import { cacheStorage, prismaStorage } from "../.."
-import { downloadMedia } from "../helper/downloadMedia"
-import { isCommand } from "../helper/isCommand"
+import { cacheStorage, prismaStorage } from "../../.."
+import { downloadMedia } from "../../helper/downloadMedia"
+import { isCommand } from "../../helper/isCommand"
 import { directCommand } from "./directCommand"
 
 type messageHandlerType = {

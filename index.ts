@@ -1,13 +1,13 @@
 import { getContentType, isJidGroup, jidDecode } from "@whiskeysockets/baileys";
 import { WASocket } from "./src/classes/WASocket.js";
 import { isCommand } from "./src/helper/isCommand.js";
-import { directCommand } from "./src/autoForward/directCommand.js";
+import { directCommand } from "./src/autoForward/message/directCommand.js";
 import { CacheStorage } from "./src/classes/CacheStorage.js";
 import OpenAI from 'openai'
 import { PrismaStorage } from "./src/classes/PrismaStorage.js";
 import { mkdir } from "fs/promises";
 import { downloadMedia } from "./src/helper/downloadMedia.js";
-import { messageHandler } from "./src/autoForward/messageHandler.js";
+import { messageHandler } from "./src/autoForward/message/messageHandler.js";
 import { msgCronBatchForward } from "./src/autoForward/cron/msgCronBatchForward.js";
 import { msgCronCleanup } from "./src/autoForward/cron/msgCronCleanup.js";
 
