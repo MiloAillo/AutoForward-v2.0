@@ -10,7 +10,16 @@ async function delay(ms: number): Promise<void> {
 }
 
 export async function msgCronBatchForward() {
-    nodeCron.schedule("*/1 * * * *", async () => {
+    const intervalMinutes = parseInt(process.env.BATCH_FORWARD_INTERVAL_MINUTES || "30")
+    
+    if (isNaN(intervalMinutes) || intervalMinutes < 1) {
+        throw new Error(`[msgCronBatchForward] Invalid BATCH_FORWARD_INTERVAL_MINUTES: "${process.env.BATCH_FORWARD_INTERVAL_MINUTES}". Must be a positive integer >= 1.`)
+    }
+    
+    const cronExpression = `*/${intervalMinutes} * * * *`
+    console.log(`[msgCronBatchForward] Configured to run every ${intervalMinutes} minute(s)`)
+    
+    nodeCron.schedule(cronExpression, async () => {
         console.log("[msgCronBatchForward] Batch forward initiated")
         
         try {
