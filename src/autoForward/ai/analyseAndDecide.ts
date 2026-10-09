@@ -50,7 +50,7 @@ const tools: OpenAI.Chat.Completions.ChatCompletionTool[] = [
         type: "function",
         function: {
             name: "writeMessagesWithMedia",
-            description: "Send AI-written text messages with media files attached (caption required). Media messages are automatically marked as sent after sending.",
+            description: "Send AI-written text messages with media files attached (caption required). Media messages and source messages are automatically marked as sent after sending.",
             parameters: {
                 type: "object",
                 properties: {
@@ -71,9 +71,14 @@ const tools: OpenAI.Chat.Completions.ChatCompletionTool[] = [
                             required: ["mediaPath", "caption"]
                         },
                         description: "Array of media items with captions"
+                    },
+                    sourceMessageIds: {
+                        type: "array",
+                        items: { type: "number" },
+                        description: "Database IDs of source text messages you're summarizing/combining into captions (will be auto-marked as sent)"
                     }
                 },
-                required: ["mediaItems"]
+                required: ["mediaItems", "sourceMessageIds"]
             }
         }
     },
@@ -158,8 +163,10 @@ AVAILABLE ACTIONS:
 • writeMessages(texts[], sourceMessageIds[]) - Send your own AI-written messages
   Provide sourceMessageIds to mark the original messages you're summarizing as sent
 
-• writeMessagesWithMedia(mediaItems[]) - Send media with modified captions
-  Media messages are automatically marked as sent after sending
+• writeMessagesWithMedia(mediaItems[], sourceMessageIds[]) - Send media with modified captions
+  Provide sourceMessageIds when you're summarizing text messages into the media caption
+  Both media and source messages are automatically marked as sent
+  Supports images, videos, and documents (PDF, DOCX, etc.)
 
 • sendMedia(mediaPaths[]) - Send media without captions
   Media messages are automatically marked as sent after sending
@@ -179,7 +186,8 @@ All messages in this batch are UNSENT (isSent: false) and need to be processed.
 After processing messages, they are automatically marked as sent:
 - forwardMessages() → auto-marks forwarded messages
 - writeMessages() → auto-marks source messages (via sourceMessageIds)
-- sendMedia() / writeMessagesWithMedia() → auto-marks media messages
+- writeMessagesWithMedia() → auto-marks media messages AND source messages (via sourceMessageIds)
+- sendMedia() → auto-marks media messages
 
 If you need context from previous batches, you won't have access to it in this system. Make decisions based only on the current batch of unsent messages.
 
@@ -276,8 +284,8 @@ COMMON SCENARIOS:
    → Messages [5, 6] are auto-marked as sent ✓
    
    Example 3 - Media with caption:
-   → writeMessagesWithMedia([{mediaPath: "img.jpg", caption: "Text"}])
-   → Media message is auto-marked as sent ✓
+   → writeMessagesWithMedia([{mediaPath: "img.jpg", caption: "Text"}], sourceMessageIds: [1, 2])
+   → Media message AND source messages [1, 2] are auto-marked as sent ✓
    
    Only use markMessagesAsSent() manually for spam/irrelevant messages you want to ignore without forwarding.
 
@@ -367,6 +375,7 @@ CRITICAL RULES:
     
                 case "writeMessagesWithMedia":
                     const rawItems = args.mediaItems as {mediaPath: string, caption: string}[]
+                    const mediaSourceMessageIds = args.sourceMessageIds as number[] | undefined
                     
                     // Look up mediaType from original chats and collect message IDs
                     const items = rawItems.map(item => {
@@ -398,6 +407,12 @@ CRITICAL RULES:
                     if (mediaMessageIds.length > 0) {
                         await prismaStorage.markAsSent(mediaMessageIds)
                         console.log(`[AnalyseAndDecide] Auto-marked ${mediaMessageIds.length} media message(s) as sent`)
+                    }
+                    
+                    // Automatically mark source text messages as sent
+                    if (mediaSourceMessageIds && mediaSourceMessageIds.length > 0) {
+                        await prismaStorage.markAsSent(mediaSourceMessageIds)
+                        console.log(`[AnalyseAndDecide] Auto-marked ${mediaSourceMessageIds.length} source message(s) as sent`)
                     }
                     break
     
