@@ -1,7 +1,7 @@
 import type OpenAI from "openai";
-import type { aiReadyFormatter } from "../../helper/aiReadyFormatter";
-import { modelProvider, prismaStorage } from "../../..";
-import { forwardMessages, sendMediaWithCaption, writeMessages } from "../message/messageSender";
+import type { aiReadyFormatter } from "../../helper/aiReadyFormatter.ts";
+import { modelProvider, prismaStorage } from "../../../index.ts";
+import { forwardMessages, sendMediaWithCaption, writeMessages } from "../message/messageSender.ts";
 import type { WAMessage } from "@whiskeysockets/baileys";
 
 const tools: OpenAI.Chat.Completions.ChatCompletionTool[] = [

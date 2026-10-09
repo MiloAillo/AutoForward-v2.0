@@ -1,18 +1,23 @@
 import { getContentType, isJidGroup, jidDecode } from "@whiskeysockets/baileys";
-import { WASocket } from "./src/classes/WASocket.js";
-import { isCommand } from "./src/helper/isCommand.js";
-import { directCommand } from "./src/autoForward/message/directCommand.js";
-import { CacheStorage } from "./src/classes/CacheStorage.js";
+import { WASocket } from "./src/classes/WASocket.ts";
+import { isCommand } from "./src/helper/isCommand.ts";
+import { directCommand } from "./src/autoForward/message/directCommand.ts";
+import { CacheStorage } from "./src/classes/CacheStorage.ts";
 import OpenAI from 'openai'
-import { PrismaStorage } from "./src/classes/PrismaStorage.js";
+import { PrismaStorage } from "./src/classes/PrismaStorage.ts";
 import { mkdir } from "fs/promises";
-import { downloadMedia } from "./src/helper/downloadMedia.js";
-import { messageHandler } from "./src/autoForward/message/messageHandler.js";
-import { msgCronBatchForward } from "./src/autoForward/cron/msgCronBatchForward.js";
-import { msgCronCleanup } from "./src/autoForward/cron/msgCronCleanup.js";
+import { downloadMedia } from "./src/helper/downloadMedia.ts";
+import { messageHandler } from "./src/autoForward/message/messageHandler.ts";
+import { msgCronBatchForward } from "./src/autoForward/cron/msgCronBatchForward.ts";
+import { msgCronCleanup } from "./src/autoForward/cron/msgCronCleanup.ts";
 
 // env load
-process.loadEnvFile(".env")
+try {
+  process.loadEnvFile(".env")
+} catch (error) {
+  // .env file not found - likely running in Docker with environment variables
+  console.log("[index] .env file not found, using environment variables")
+}
 
 if (!process.env.ADMIN_NUMBER) throw Error("ADMIN_NUMBER needed inside .env")
 if (!process.env.OPENAI_API_KEY) throw Error("OPENAI_API_KEY needed inside .env")

@@ -1,0 +1,2 @@
+-- AlterTable
+ALTER TABLE `Chat` ADD COLUMN `mediaBase64` LONGTEXT NULL;

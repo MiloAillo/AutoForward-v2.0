@@ -1,6 +1,6 @@
 import { PrismaMariaDb } from "@prisma/adapter-mariadb";
 import type { WAMessage } from "@whiskeysockets/baileys";
-import { PrismaClient } from "../../generated/prisma/client"
+import { PrismaClient } from "../../generated/prisma/client.ts"
 
 type createRuleType = {
     title: string

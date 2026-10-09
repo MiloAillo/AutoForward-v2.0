@@ -1,17 +1,32 @@
-FROM node:22.6-alpine
+FROM node:22-alpine
 
 WORKDIR /app
 
-COPY package*.json tsconfig.json ./
+# Copy package files and Prisma config
+COPY package*.json prisma7.config.ts tsconfig.json ./
 
+# Install dependencies
 RUN npm ci
 
+# Copy Prisma schema
+COPY prisma ./prisma
+
+# Copy application code
 COPY . .
 
-RUN npx tsc
+# Generate Prisma Client (with dummy DATABASE_URL for build)
+ENV DATABASE_URL="mysql://dummy:dummy@localhost:3306/dummy"
+RUN npx prisma generate
 
-RUN mkdir -p storage auth
+# Create required directories
+RUN mkdir -p storage/media auth
 
+# Copy entrypoint script
+COPY docker-entrypoint.sh /usr/local/bin/
+RUN chmod +x /usr/local/bin/docker-entrypoint.sh
+
+# Volumes for persistence
 VOLUME ["/app/storage", "/app/auth"]
 
-CMD ["node", "dist/index.js"]
+# Run entrypoint script
+ENTRYPOINT ["docker-entrypoint.sh"]

@@ -1,6 +1,6 @@
 import type { WAMessage } from "@whiskeysockets/baileys";
-import { cacheStorage, prismaStorage, socket } from "../../../index.js";
-import { parseCreateRule } from "../../helper/parseCreateRule.js";
+import { cacheStorage, prismaStorage, socket } from "../../../index.ts";
+import { parseCreateRule } from "../../helper/parseCreateRule.ts";
 
 export async function directCommand(msg: WAMessage, converstation: string) {
     const sock = socket.getSocket()

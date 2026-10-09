@@ -1,5 +1,5 @@
 import NodeCache from "node-cache";
-import { socket } from "../../index.js";
+import { socket } from "../../index.ts";
 import type { GroupMetadata } from "@whiskeysockets/baileys";
 
 export class CacheStorage {

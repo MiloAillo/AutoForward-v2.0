@@ -1,5 +1,5 @@
 import nodeCron from "node-cron";
-import { prismaStorage } from "../../..";
+import { prismaStorage } from "../../../index.ts";
 
 export function msgCronCleanup() {
     const retentionDays = parseInt(process.env.CLEANUP_RETENTION_DAYS || "7")

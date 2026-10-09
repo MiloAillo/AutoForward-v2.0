@@ -1,6 +1,6 @@
 import type { WAMessage } from "@whiskeysockets/baileys";
 import { readFileSync } from "fs";
-import { socket } from "../../..";
+import { socket } from "../../../index.ts";
 
 const RATE_LIMIT_MS = 1000;
 

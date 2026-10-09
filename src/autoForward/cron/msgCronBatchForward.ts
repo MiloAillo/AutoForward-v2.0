@@ -1,9 +1,9 @@
 import nodeCron from "node-cron";
-import { prismaStorage } from "../../..";
-import { forwardMessages } from "../message/messageSender";
+import { prismaStorage } from "../../../index.ts";
+import { forwardMessages } from "../message/messageSender.ts";
 import type { WAMessage } from "@whiskeysockets/baileys";
-import { aiReadyFormatter } from "../../helper/aiReadyFormatter";
-import { analyzeAndDecide } from "../ai/analyseAndDecide";
+import { aiReadyFormatter } from "../../helper/aiReadyFormatter.ts";
+import { analyzeAndDecide } from "../ai/analyseAndDecide.ts";
 
 async function delay(ms: number): Promise<void> {
     return new Promise(resolve => setTimeout(resolve, ms));

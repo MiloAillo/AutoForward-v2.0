@@ -1,6 +1,6 @@
 import type { WAMessage } from "@whiskeysockets/baileys";
-import { Prisma, type Chat, type ForwardItem }  from "../../generated/prisma/client"
-import { cacheStorage } from "../..";
+import { Prisma, type Chat, type ForwardItem }  from "../../generated/prisma/client.ts"
+import { cacheStorage } from "../../index.ts";
 
 type ForwardWithRelations = Prisma.ForwardItemGetPayload<{
     include: {
